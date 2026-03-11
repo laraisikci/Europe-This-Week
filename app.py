@@ -502,7 +502,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 col_btn, _ = st.columns([1, 2])
 with col_btn:
-    go = st.button("✈️  SURPRISE ME", key="go_btn")
+    clicked = st.button("✈️  SURPRISE ME", key="go_btn")
 
 # ── SESSION STATE ──────────────────────────────────────────────────────────────
 
@@ -515,7 +515,7 @@ if "current_city" not in st.session_state:
 
 # ── MAIN LOGIC ─────────────────────────────────────────────────────────────────
 
-if go:
+if clicked:
     if not vibes and not interests:
         st.warning("Please select at least one vibe or interest!")
         st.stop()
