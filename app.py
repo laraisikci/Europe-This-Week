@@ -188,7 +188,7 @@ Remember: respond ONLY with the JSON object, nothing else."""
 
     # First attempt
     response = co.chat(
-        model="command-r-plus",
+        model="command-r-plus-08-2024",
         message=prompt,
         temperature=0.7,
     )
@@ -208,7 +208,7 @@ Remember: respond ONLY with the JSON object, nothing else."""
         retry_prompt = f"""Return ONLY a JSON object with keys: narrative, activities (list of 3), packing_tip, best_time_to_visit.
 City: {city}. Vibes: {', '.join(vibes)}. No markdown, no extra text, just the JSON."""
         retry_response = co.chat(
-            model="command-r-plus",
+            model="command-r-plus-08-2024",
             message=retry_prompt,
             temperature=0.3,
         )
@@ -244,7 +244,7 @@ If they ask about other destinations, you can briefly mention them but always br
         })
 
     response = co.chat(
-        model="command-r-plus",
+        model="command-r-plus-08-2024",
         message=user_message,
         chat_history=cohere_history,
         preamble=system_prompt,
