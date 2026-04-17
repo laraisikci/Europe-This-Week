@@ -8,14 +8,13 @@ import json
 from datetime import date
 
 # ── Page Config ────────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Eventful Travel App", layout="wide", page_icon="✈️")
+st.set_page_config(page_title="Europe This Week", layout="wide", page_icon="🌍")
 
 # ── COHERE CLIENT ──────────────────────────────────────────────────────────────
 try:
     COHERE_API_KEY = st.secrets["COHERE_API_KEY"]
 except:
     COHERE_API_KEY = ""
-
 co = cohere.Client(COHERE_API_KEY, timeout=120) if COHERE_API_KEY else None
 
 # ── CITY DATABASE ──────────────────────────────────────────────────────────────
@@ -26,6 +25,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 80,
         "description": "Sun, Gaudí, and the best nightlife in Southern Europe.",
         "emoji": "💃", "lat": 41.3851, "lon": 2.1734,
+        "energy": 3, "social": 3, "splurge": 2, "sunshine": 3, "adventure": 1,
     },
     "Paris, France": {
         "vibes": {"Romantic": 3, "Culture": 3, "Foodie": 3, "Hidden Gems": 1, "Relaxation": 1, "Nightlife": 1, "Beach": 0, "Adventure": 0},
@@ -33,6 +33,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 100,
         "description": "Romance, world-class cuisine, and iconic art museums.",
         "emoji": "🗼", "lat": 48.8566, "lon": 2.3522,
+        "energy": 2, "social": 2, "splurge": 3, "sunshine": 1, "adventure": 0,
     },
     "Amsterdam, Netherlands": {
         "vibes": {"Nightlife": 3, "Culture": 2, "Hidden Gems": 2, "Romantic": 2, "Foodie": 1, "Relaxation": 1, "Beach": 0, "Adventure": 1},
@@ -40,6 +41,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 90,
         "description": "World-class DJs, canals, and a vibrant cultural scene.",
         "emoji": "🎧", "lat": 52.3676, "lon": 4.9041,
+        "energy": 3, "social": 3, "splurge": 2, "sunshine": 1, "adventure": 1,
     },
     "Naples, Italy": {
         "vibes": {"Foodie": 3, "Culture": 2, "Hidden Gems": 2, "Beach": 2, "Romantic": 1, "Relaxation": 2, "Nightlife": 1, "Adventure": 0},
@@ -47,6 +49,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 90,
         "description": "The birthplace of pizza with authentic markets and history.",
         "emoji": "🍕", "lat": 40.8518, "lon": 14.2681,
+        "energy": 2, "social": 2, "splurge": 1, "sunshine": 3, "adventure": 1,
     },
     "Ljubljana, Slovenia": {
         "vibes": {"Relaxation": 3, "Hidden Gems": 3, "Culture": 2, "Romantic": 2, "Adventure": 1, "Foodie": 1, "Nightlife": 0, "Beach": 0},
@@ -54,6 +57,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 85,
         "description": "Europe's hidden gem — peaceful, green, and charming.",
         "emoji": "🍃", "lat": 46.0569, "lon": 14.5058,
+        "energy": 1, "social": 1, "splurge": 1, "sunshine": 2, "adventure": 1,
     },
     "Ghent, Belgium": {
         "vibes": {"Culture": 3, "Hidden Gems": 3, "Foodie": 2, "Romantic": 2, "Relaxation": 2, "Nightlife": 1, "Beach": 0, "Adventure": 0},
@@ -61,6 +65,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 95,
         "description": "Medieval architecture, craft beer, and a thriving art scene.",
         "emoji": "🏰", "lat": 51.0543, "lon": 3.7174,
+        "energy": 1, "social": 2, "splurge": 1, "sunshine": 1, "adventure": 0,
     },
     "Mallorca, Spain": {
         "vibes": {"Beach": 3, "Relaxation": 3, "Romantic": 2, "Foodie": 1, "Nightlife": 2, "Adventure": 1, "Culture": 1, "Hidden Gems": 1},
@@ -68,6 +73,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 100,
         "description": "Crystal clear water, hidden coves, and coastal bliss.",
         "emoji": "🏖️", "lat": 39.6953, "lon": 3.0176,
+        "energy": 2, "social": 2, "splurge": 2, "sunshine": 3, "adventure": 2,
     },
     "Chamonix, France": {
         "vibes": {"Adventure": 3, "Relaxation": 1, "Hidden Gems": 2, "Romantic": 2, "Culture": 1, "Nightlife": 0, "Beach": 0, "Foodie": 1},
@@ -75,6 +81,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 110,
         "description": "Alpine adventure capital — hiking, skiing, and mountain air.",
         "emoji": "⛰️", "lat": 45.9237, "lon": 6.8694,
+        "energy": 3, "social": 1, "splurge": 2, "sunshine": 2, "adventure": 3,
     },
     "Lisbon, Portugal": {
         "vibes": {"Culture": 3, "Foodie": 2, "Romantic": 2, "Hidden Gems": 2, "Relaxation": 2, "Nightlife": 2, "Beach": 1, "Adventure": 0},
@@ -82,6 +89,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 95,
         "description": "Fado music, pastel de nata, and stunning hilltop views.",
         "emoji": "🎵", "lat": 38.7223, "lon": -9.1393,
+        "energy": 2, "social": 2, "splurge": 1, "sunshine": 3, "adventure": 1,
     },
     "Reykjavik, Iceland": {
         "vibes": {"Adventure": 3, "Hidden Gems": 3, "Relaxation": 2, "Romantic": 2, "Culture": 1, "Nightlife": 1, "Beach": 0, "Foodie": 0},
@@ -89,6 +97,7 @@ CITY_DATA = {
         "distance_zone": 2, "base_flight": 180,
         "description": "Northern lights, geysers, and raw volcanic landscapes.",
         "emoji": "🌌", "lat": 64.1466, "lon": -21.9426,
+        "energy": 3, "social": 1, "splurge": 3, "sunshine": 0, "adventure": 3,
     },
     "Dubrovnik, Croatia": {
         "vibes": {"Beach": 3, "Romantic": 3, "Culture": 2, "Hidden Gems": 2, "Relaxation": 2, "Nightlife": 1, "Adventure": 1, "Foodie": 1},
@@ -96,6 +105,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 120,
         "description": "Stunning city walls and crystal Adriatic sea.",
         "emoji": "🏰", "lat": 42.6507, "lon": 18.0944,
+        "energy": 2, "social": 2, "splurge": 2, "sunshine": 3, "adventure": 1,
     },
     "Prague, Czech Republic": {
         "vibes": {"Culture": 3, "Hidden Gems": 2, "Nightlife": 3, "Romantic": 2, "Foodie": 1, "Relaxation": 1, "Beach": 0, "Adventure": 0},
@@ -103,6 +113,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 85,
         "description": "Fairytale architecture, cheap beer, and buzzing nightlife.",
         "emoji": "🍺", "lat": 50.0755, "lon": 14.4378,
+        "energy": 3, "social": 3, "splurge": 1, "sunshine": 1, "adventure": 0,
     },
     "Seville, Spain": {
         "vibes": {"Culture": 3, "Foodie": 3, "Romantic": 3, "Nightlife": 2, "Hidden Gems": 1, "Relaxation": 1, "Beach": 0, "Adventure": 0},
@@ -110,6 +121,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 90,
         "description": "Flamenco, tapas, and Moorish palaces under the Andalusian sun.",
         "emoji": "💃", "lat": 37.3891, "lon": -5.9845,
+        "energy": 2, "social": 3, "splurge": 1, "sunshine": 3, "adventure": 0,
     },
     "Vienna, Austria": {
         "vibes": {"Culture": 3, "Romantic": 3, "Relaxation": 2, "Foodie": 2, "Hidden Gems": 1, "Nightlife": 1, "Beach": 0, "Adventure": 0},
@@ -117,6 +129,7 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 105,
         "description": "Classical music, imperial palaces, and Viennese coffee culture.",
         "emoji": "🎻", "lat": 48.2082, "lon": 16.3738,
+        "energy": 1, "social": 2, "splurge": 2, "sunshine": 1, "adventure": 0,
     },
     "Algarve, Portugal": {
         "vibes": {"Beach": 3, "Relaxation": 3, "Romantic": 2, "Adventure": 1, "Foodie": 1, "Hidden Gems": 1, "Nightlife": 1, "Culture": 0},
@@ -124,12 +137,88 @@ CITY_DATA = {
         "distance_zone": 1, "base_flight": 100,
         "description": "Dramatic cliffs, golden beaches, and fresh seafood.",
         "emoji": "🌊", "lat": 37.0179, "lon": -7.9304,
+        "energy": 1, "social": 1, "splurge": 1, "sunshine": 3, "adventure": 2,
     },
 }
 
+# ── SLIDER EMOJI HELPERS ───────────────────────────────────────────────────────
+
+def energy_emoji(v):
+    if v <= 25: return "😴 Exhausted"
+    if v <= 50: return "🧘 Chilling"
+    if v <= 75: return "😊 Good vibes"
+    return "⚡ Full power!"
+
+def social_emoji(v):
+    if v <= 25: return "🪨 Hermit mode"
+    if v <= 50: return "🤝 Selective"
+    if v <= 75: return "😄 Sociable"
+    return "🎉 Party animal!"
+
+def splurge_emoji(v):
+    if v <= 25: return "🪙 Budget mode"
+    if v <= 50: return "💳 Moderate"
+    if v <= 75: return "💰 Treating myself"
+    return "🤑 Splash out!"
+
+def sunshine_emoji(v):
+    if v <= 25: return "🌧️ Cozy indoors"
+    if v <= 50: return "⛅ Flexible"
+    if v <= 75: return "🌤️ Prefer sunny"
+    return "☀️ Need that sun!"
+
+def adventure_emoji(v):
+    if v <= 25: return "🛋️ Sofa mode"
+    if v <= 50: return "🚶 Easy pace"
+    if v <= 75: return "🏃 Active"
+    return "🧗 Adrenaline seeker!"
+
+# ── SLIDER → VIBE MAPPING ──────────────────────────────────────────────────────
+
+def sliders_to_profile(energy, social, splurge, sunshine, adventure):
+    vibes = []
+    interests = []
+    if energy >= 70:
+        vibes.append("Nightlife")
+        if adventure >= 60:
+            vibes.append("Adventure")
+    elif energy <= 35:
+        vibes.append("Relaxation")
+    if social >= 70:
+        vibes.append("Nightlife")
+        interests.append("Music Festivals")
+    elif social <= 35:
+        vibes.append("Hidden Gems")
+        vibes.append("Romantic")
+    if splurge >= 70:
+        vibes.append("Romantic")
+        interests.append("Art Galleries")
+        interests.append("Foodie Tours")
+    elif splurge <= 35:
+        vibes.append("Hidden Gems")
+    if sunshine >= 70:
+        vibes.append("Beach")
+        vibes.append("Relaxation")
+    elif sunshine <= 35:
+        vibes.append("Culture")
+        interests.append("Art Galleries")
+    if adventure >= 70:
+        vibes.append("Adventure")
+        interests.append("Hiking")
+        interests.append("Sports")
+    elif adventure <= 35:
+        vibes.append("Culture")
+        vibes.append("Foodie")
+        interests.append("Foodie Tours")
+    vibes = list(dict.fromkeys(vibes)) or ["Culture"]
+    interests = list(dict.fromkeys(interests))
+    combined = (energy + adventure) / 2
+    activity_level = "Intense" if combined >= 65 else ("Very Low" if combined < 35 else "Moderate")
+    return vibes, interests, activity_level
+
 # ── SCORING MODEL ──────────────────────────────────────────────────────────────
 
-def score_cities(vibes, interests, activity_level):
+def score_cities(vibes, interests, activity_level, energy, social, splurge, sunshine, adventure, city_event_counts, city_weather):
     activity_multiplier = {"Very Low": 0.5, "Moderate": 1.0, "Intense": 1.5}
     mult = activity_multiplier[activity_level]
     results = []
@@ -140,367 +229,81 @@ def score_cities(vibes, interests, activity_level):
         if "Relaxation" in vibes:
             vibe_score += data["vibes"].get("Relaxation", 0) * (0.5 - mult if mult < 1 else 0)
         interest_score = sum(data["interests"].get(i, 0) for i in interests)
-        total = vibe_score + interest_score
-        max_possible = len(vibes) * 3 + len(interests) * 3 if (vibes or interests) else 1
+        slider_score = 0
+        slider_score += data.get("energy", 0) * (energy / 100) * 2
+        slider_score += data.get("social", 0) * (social / 100) * 2
+        slider_score += data.get("splurge", 0) * (splurge / 100) * 2
+        slider_score += data.get("sunshine", 0) * (sunshine / 100) * 2
+        slider_score += data.get("adventure", 0) * (adventure / 100) * 2
+        event_count = city_event_counts.get(city, 0)
+        event_bonus = min(event_count * 0.5, 3.0)
+        if social >= 60 or energy >= 60:
+            slider_score += event_bonus
+        weather = city_weather.get(city, {})
+        temp = weather.get("temp", 15)
+        weathercode = weather.get("weathercode", 3)
+        is_sunny = weathercode <= 2
+        if sunshine >= 60 and is_sunny and temp >= 18:
+            slider_score += 2.0
+        elif sunshine <= 40 and not is_sunny:
+            slider_score += 1.0
+        total = vibe_score + interest_score + slider_score
+        max_possible = len(vibes) * 3 + len(interests) * 3 + 30 + 3 + 2
         match_pct = min(round((total / max_possible) * 100), 99) if max_possible > 0 else 0
         results.append({
             "city": city, "vibe_score": round(vibe_score, 1),
             "interest_score": round(interest_score, 1),
+            "slider_score": round(slider_score, 1),
             "total_score": round(total, 1), "match_pct": match_pct,
             "description": data["description"], "emoji": data["emoji"],
+            "event_count": event_count, "weather": weather,
         })
     return pd.DataFrame(results).sort_values("total_score", ascending=False).reset_index(drop=True)
 
-# ── LLM FEATURE 1: Travel Narrative + Activities ───────────────────────────────
+# ── LIVE DATA ──────────────────────────────────────────────────────────────────
 
-def get_llm_travel_insight(city, vibes, interests, activity_level, match_pct):
-    """
-    Calls Cohere with a carefully engineered prompt to return structured JSON.
-    System prompt example:
-        'You are a personalized travel expert. A traveler has been matched with {city}
-         by a scoring algorithm ({match_pct}% match). Their profile: vibes, interests,
-         activity level. Respond ONLY with a valid JSON object...'
-    The JSON output drives the UI — non-straightforward post-processing.
-    """
-    if not co:
-        return None
-
-    prompt = f"""You are a personalized travel expert. A traveler has been matched with {city} by a scoring algorithm ({match_pct}% match).
-
-Their profile:
-- Trip vibes: {', '.join(vibes) if vibes else 'Not specified'}
-- Personal interests: {', '.join(interests) if interests else 'Not specified'}
-- Activity level: {activity_level}
-
-Your task is to enrich this recommendation with personalized insights. You must respond ONLY with a valid JSON object — no explanation, no markdown, no extra text.
-
-The JSON must have exactly this structure:
-{{
-  "narrative": "A 2-sentence personalized explanation of why this city matches their specific vibe profile. Be specific and enthusiastic.",
-  "activities": [
-    "Activity 1 tailored to their vibes and interests",
-    "Activity 2 tailored to their vibes and interests",
-    "Activity 3 tailored to their vibes and interests"
-  ],
-  "packing_tip": "One specific packing tip based on the city and activity level",
-  "best_time_to_visit": "One sentence about the best time to visit given their vibe preferences"
-}}
-
-Remember: respond ONLY with the JSON object, nothing else."""
-
-    response = co.chat(model="command-r-plus-08-2024", message=prompt, temperature=0.7)
-    raw = response.text.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    raw = raw.strip()
-
+def fetch_event_counts_all_cities():
     try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        retry_prompt = f"""Return ONLY a JSON object with keys: narrative, activities (list of 3), packing_tip, best_time_to_visit.
-City: {city}. Vibes: {', '.join(vibes)}. No markdown, no extra text, just the JSON."""
-        retry_response = co.chat(model="command-r-plus-08-2024", message=retry_prompt, temperature=0.3)
-        raw2 = retry_response.text.strip()
-        if raw2.startswith("```"):
-            raw2 = raw2.split("```")[1]
-            if raw2.startswith("json"):
-                raw2 = raw2[4:]
+        api_key = st.secrets["TICKETMASTER_API_KEY"]
+    except:
+        api_key = "9Rri7l1kutIcmyOqcbKstEN88GkcPGy7"
+    counts = {}
+    for city_name in CITY_DATA:
+        clean_city = city_name.split(',')[0].strip()
         try:
-            return json.loads(raw2.strip())
+            url = f"https://app.ticketmaster.com/discovery/v2/events.json?city={clean_city}&apikey={api_key}&size=20"
+            data = requests.get(url, timeout=4).json()
+            counts[city_name] = min(data.get("page", {}).get("totalElements", 0), 20)
         except:
-            return None
+            counts[city_name] = 0
+    return counts
 
-# ── LLM FEATURE 3: Multi-Agent Debate ─────────────────────────────────────────
-
-AGENTS = [
-    {
-        "name": "Budget Traveler",
-        "emoji": "🎒",
-        "color": "#4CAF50",
-        "bg": "rgba(76,175,80,0.08)",
-        "border": "#4CAF50",
-        "persona": (
-            "You are a Budget Traveler agent. You evaluate destinations purely through "
-            "the lens of value for money. You care about: low flight costs, affordable "
-            "accommodation, cheap local food, free or low-cost attractions, and off-peak "
-            "travel opportunities. You are skeptical of expensive or overrated cities."
-        ),
-    },
-    {
-        "name": "Luxury Traveler",
-        "emoji": "👑",
-        "color": "#9C27B0",
-        "bg": "rgba(156,39,176,0.08)",
-        "border": "#9C27B0",
-        "persona": (
-            "You are a Luxury Traveler agent. You evaluate destinations through the lens "
-            "of premium experiences. You care about: Michelin-starred restaurants, boutique "
-            "hotels, exclusive experiences, cultural prestige, scenic beauty, and sophistication. "
-            "You are dismissive of budget or party destinations."
-        ),
-    },
-    {
-        "name": "Adventure Seeker",
-        "emoji": "🧗",
-        "color": "#FF5722",
-        "bg": "rgba(255,87,34,0.08)",
-        "border": "#FF5722",
-        "persona": (
-            "You are an Adventure Seeker agent. You evaluate destinations through the lens "
-            "of physical activity and outdoor excitement. You care about: hiking trails, "
-            "water sports, extreme sports, nature access, and physical challenges. "
-            "You are bored by museum-heavy or relaxation-focused cities."
-        ),
-    },
-]
-
-def _call_agent(agent, top3_cities, vibes, interests, activity_level, flight_costs):
-    """
-    Single agent evaluates the top 3 cities and picks a winner.
-    Returns a dict with: winner, reasoning (per city), and verdict.
-    """
-    cities_info = "\n".join([
-        f"- {c['city']} ({c['emoji']}): {c['match_pct']}% match score, est. flight €{flight_costs.get(c['city'], '?')}"
-        for c in top3_cities
-    ])
-
-    prompt = f"""{agent['persona']}
-
-A traveler is choosing between these 3 European destinations:
-{cities_info}
-
-Traveler profile:
-- Vibes: {', '.join(vibes) if vibes else 'Not specified'}
-- Interests: {', '.join(interests) if interests else 'Not specified'}
-- Activity level: {activity_level}
-
-From YOUR perspective as a {agent['name']}, evaluate each city in 1 sentence, then pick your top choice.
-Respond ONLY with a valid JSON object with this exact structure:
-{{
-  "evaluations": {{
-    "{top3_cities[0]['city']}": "Your 1-sentence evaluation from your persona",
-    "{top3_cities[1]['city']}": "Your 1-sentence evaluation from your persona",
-    "{top3_cities[2]['city']}": "Your 1-sentence evaluation from your persona"
-  }},
-  "winner": "The city name you recommend (must be one of the 3 above)",
-  "verdict": "One punchy sentence explaining why your chosen city wins from your perspective"
-}}
-
-Respond ONLY with the JSON, no markdown, no extra text."""
-
-    response = co.chat(model="command-r-plus-08-2024", message=prompt, temperature=0.75)
-    raw = response.text.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    raw = raw.strip()
-    try:
-        return json.loads(raw)
-    except:
-        return {"evaluations": {}, "winner": top3_cities[0]["city"], "verdict": "Unable to evaluate at this time."}
-
-
-def _call_moderator(agent_results, top3_cities, vibes, interests):
-    """
-    Moderator agent reads all 3 agent verdicts and synthesizes a final recommendation.
-    This is the 4th LLM call — it receives the outputs of the first 3 as input,
-    making this a genuine multi-agent pipeline.
-    """
-    debate_summary = ""
-    for agent, result in zip(AGENTS, agent_results):
-        debate_summary += f"\n{agent['emoji']} {agent['name']} recommends: {result.get('winner', '?')}\n"
-        debate_summary += f"  Reason: {result.get('verdict', '')}\n"
-
-    city_names = [c["city"] for c in top3_cities]
-
-    prompt = f"""You are a neutral travel moderator. Three traveler personas have debated which of these destinations is best:
-{', '.join(city_names)}
-
-Here is the debate summary:
-{debate_summary}
-
-The traveler's profile:
-- Vibes: {', '.join(vibes) if vibes else 'Not specified'}
-- Interests: {', '.join(interests) if interests else 'Not specified'}
-
-Your job is to synthesize the debate and give a final verdict. Consider all three perspectives and make a balanced recommendation.
-Respond ONLY with a valid JSON object:
-{{
-  "final_city": "Your recommended city (must be one of the 3)",
-  "consensus": "Was there agreement or disagreement among the agents? (1 sentence)",
-  "synthesis": "2-sentence balanced explanation considering all perspectives",
-  "confidence": "High / Medium / Low — how strongly does the debate support this choice?"
-}}
-
-Respond ONLY with the JSON, no markdown, no extra text."""
-
-    response = co.chat(model="command-r-plus-08-2024", message=prompt, temperature=0.5)
-    raw = response.text.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    raw = raw.strip()
-    try:
-        return json.loads(raw)
-    except:
-        return {
-            "final_city": top3_cities[0]["city"],
-            "consensus": "Mixed opinions across agents.",
-            "synthesis": "Based on the overall profile, the top-ranked city is the best fit.",
-            "confidence": "Medium"
-        }
-
-
-def get_agent_debate(scores_df, vibes, interests, activity_level, budget, travel_dates):
-    """
-    Orchestrates the full multi-agent debate pipeline:
-    1. Get top 3 cities from scoring model
-    2. Run 3 agent LLM calls (Budget, Luxury, Adventure)
-    3. Run 1 moderator LLM call synthesizing the debate
-    Returns all results for display.
-    """
-    if not co:
-        return None
-
-    # Build top 3 with flight cost estimates
-    top3 = []
-    flight_costs = {}
-    for i in range(min(3, len(scores_df))):
-        row = scores_df.iloc[i]
-        city_name = row["city"]
-        data = CITY_DATA.get(city_name, {})
-
-        # Estimate flight cost for context
-        base = data.get("base_flight", 120)
-        zone = data.get("distance_zone", 1)
-        season_mult = 1.0
-        if travel_dates and len(travel_dates) >= 1:
-            month = travel_dates[0].month
-            if month in [6, 7, 8, 12]:
-                season_mult = 1.35
-            elif month in [4, 5, 9, 10]:
-                season_mult = 1.1
-        est_flight = round(base * zone * season_mult)
-        flight_costs[city_name] = est_flight
-
-        top3.append({
-            "city": city_name,
-            "emoji": data.get("emoji", "🌍"),
-            "match_pct": row["match_pct"],
-            "description": row["description"],
-        })
-
-    # Run 3 agent calls
-    agent_results = []
-    for agent in AGENTS:
-        result = _call_agent(agent, top3, vibes, interests, activity_level, flight_costs)
-        agent_results.append(result)
-
-    # Run moderator call
-    moderator = _call_moderator(agent_results, top3, vibes, interests)
-
-    return {
-        "top3": top3,
-        "agent_results": agent_results,
-        "moderator": moderator,
-        "flight_costs": flight_costs,
+def fetch_weather_all_cities():
+    descriptions = {
+        0: ("☀️", "Clear sky"), 1: ("🌤️", "Mainly clear"), 2: ("⛅", "Partly cloudy"),
+        3: ("☁️", "Overcast"), 45: ("🌫️", "Foggy"), 51: ("🌦️", "Light drizzle"),
+        61: ("🌧️", "Light rain"), 63: ("🌧️", "Moderate rain"),
+        71: ("🌨️", "Light snow"), 80: ("🌦️", "Showers"), 95: ("⛈️", "Thunderstorm"),
     }
-
-# ── LLM FEATURE 2: Travel Chatbot ─────────────────────────────────────────────
-
-def get_chatbot_response(user_message, chat_history, city, vibes, interests):
-    """
-    Multi-call chatbot with full conversation history sent on every turn.
-    System prompt is personalized with the recommended city and user profile.
-
-    How context is maintained:
-    - chat_history is a list of {"role": "user"/"assistant", "content": "..."}
-    - On each turn, the full history is converted to Cohere's format and sent
-    - This means the LLM always has the full conversation context
-    - The preamble (system prompt) anchors the persona and city throughout
-    """
-    if not co:
-        return "Cohere API key not configured."
-
-    system_prompt = f"""You are a friendly and knowledgeable travel assistant for the Eventful Travel App.
-The user has been recommended {city} based on their preferences: vibes ({', '.join(vibes)}), interests ({', '.join(interests)}).
-Answer their travel questions specifically about {city} and their trip. Be concise, helpful, and enthusiastic.
-If they ask about other destinations, you can briefly mention them but always bring focus back to {city}."""
-
-    cohere_history = []
-    for msg in chat_history:
-        cohere_history.append({
-            "role": "USER" if msg["role"] == "user" else "CHATBOT",
-            "message": msg["content"]
-        })
-
-    response = co.chat(
-        model="command-r-plus-08-2024",
-        message=user_message,
-        chat_history=cohere_history,
-        preamble=system_prompt,
-        temperature=0.7,
-    )
-    return response.text
-
-# ── COST MODEL ─────────────────────────────────────────────────────────────────
-
-def estimate_cost(city_name, budget, travel_dates, activity_level):
-    data = CITY_DATA.get(city_name, {})
-    base_flight = data.get("base_flight", 120)
-    zone = data.get("distance_zone", 1)
-    num_days = 3
-    if travel_dates and len(travel_dates) == 2:
-        num_days = max((travel_dates[1] - travel_dates[0]).days, 1)
-    season_mult = 1.0
-    if travel_dates and len(travel_dates) >= 1:
-        month = travel_dates[0].month
-        if month in [6, 7, 8, 12]:
-            season_mult = 1.35
-        elif month in [4, 5, 9, 10]:
-            season_mult = 1.1
-    daily_spend = {"Very Low": 40, "Moderate": 70, "Intense": 110}
-    est_activities = daily_spend[activity_level] * num_days
-    est_flight = round(base_flight * zone * season_mult)
-    total = est_flight + est_activities
-    affordable = total <= budget
-    season_label = "Peak 🔴" if season_mult == 1.35 else ("Shoulder 🟡" if season_mult == 1.1 else "Off-peak 🟢")
-    return est_flight, est_activities, total, affordable, season_label, num_days
-
-# ── WEATHER ────────────────────────────────────────────────────────────────────
-
-def fetch_weather(city_name):
-    data = CITY_DATA.get(city_name, {})
-    lat, lon = data.get("lat"), data.get("lon")
-    if not lat or not lon:
-        return None
-    try:
-        url = (f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
-               f"&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&timezone=auto")
-        result = requests.get(url, timeout=5).json()
-        current = result.get("current", {})
-        code = current.get("weathercode", 0)
-        descriptions = {
-            0: ("☀️", "Clear sky"), 1: ("🌤️", "Mainly clear"), 2: ("⛅", "Partly cloudy"),
-            3: ("☁️", "Overcast"), 45: ("🌫️", "Foggy"), 51: ("🌦️", "Light drizzle"),
-            61: ("🌧️", "Light rain"), 63: ("🌧️", "Moderate rain"),
-            71: ("🌨️", "Light snow"), 80: ("🌦️", "Showers"), 95: ("⛈️", "Thunderstorm"),
-        }
-        emoji, desc = descriptions.get(code, ("🌡️", "Variable"))
-        return {
-            "temp": round(current.get("temperature_2m", 0)),
-            "description": desc, "emoji": emoji,
-            "wind": round(current.get("windspeed_10m", 0)),
-            "humidity": current.get("relative_humidity_2m", 0),
-        }
-    except:
-        return None
-
-# ── TICKETMASTER ───────────────────────────────────────────────────────────────
+    weather = {}
+    for city_name, data in CITY_DATA.items():
+        lat, lon = data.get("lat"), data.get("lon")
+        try:
+            url = (f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+                   f"&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&timezone=auto")
+            result = requests.get(url, timeout=4).json()
+            current = result.get("current", {})
+            code = current.get("weathercode", 3)
+            emoji, desc = descriptions.get(code, ("🌡️", "Variable"))
+            weather[city_name] = {
+                "temp": round(current.get("temperature_2m", 15)),
+                "weathercode": code, "description": desc, "emoji": emoji,
+                "wind": round(current.get("windspeed_10m", 0)),
+                "humidity": current.get("relative_humidity_2m", 0),
+            }
+        except:
+            weather[city_name] = {"temp": 15, "weathercode": 3, "description": "Unknown", "emoji": "🌡️", "wind": 0, "humidity": 0}
+    return weather
 
 def fetch_real_events(city_name):
     clean_city = city_name.split(',')[0].strip()
@@ -517,253 +320,397 @@ def fetch_real_events(city_name):
     except:
         return []
 
-# ── GLOBAL CSS ─────────────────────────────────────────────────────────────────
+# ── LLM: MOOD NARRATIVE ────────────────────────────────────────────────────────
+
+def get_mood_narrative(city, vibes, interests, activity_level, energy, social, splurge, sunshine, adventure, match_pct, city_weather, event_count):
+    if not co:
+        return None
+    weather = city_weather.get(city, {})
+    weather_desc = f"{weather.get('emoji','')} {weather.get('temp','?')}°C, {weather.get('description','unknown')}"
+    prompt = f"""You are a travel mood expert. A traveler's current mood:
+- Energy: {energy}/100, Social: {social}/100, Budget: {splurge}/100, Sunshine: {sunshine}/100, Adventure: {adventure}/100
+- Matched with: {city} ({match_pct}% match)
+- LIVE: Weather right now: {weather_desc}. Events this week: {event_count} on Ticketmaster.
+
+Write a mood-aware, enthusiastic explanation referencing the live data. Respond ONLY with JSON:
+{{
+  "headline": "Punchy 6-8 word headline",
+  "narrative": "2-3 sentences mentioning live weather and/or events specifically",
+  "mood_tag": "2-3 word mood label (e.g. Recharge Mode, Party Ready)",
+  "activities": ["Activity 1", "Activity 2", "Activity 3"],
+  "packing_tip": "One tip based on live weather and activity level"
+}}
+Only JSON, no markdown."""
+    response = co.chat(model="command-r-plus-08-2024", message=prompt, temperature=0.7)
+    raw = response.text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    try:
+        return json.loads(raw.strip())
+    except:
+        return None
+
+# ── LLM: MULTI-AGENT DEBATE ────────────────────────────────────────────────────
+
+AGENTS = [
+    {"name": "Budget Traveler", "emoji": "🎒", "color": "#22c55e", "bg": "#f0fdf4", "border": "#86efac",
+     "persona": "You are a Budget Traveler. You care about value for money, cheap flights, affordable food, and off-peak deals. Skeptical of pricey cities."},
+    {"name": "Luxury Traveler", "emoji": "👑", "color": "#a855f7", "bg": "#faf5ff", "border": "#d8b4fe",
+     "persona": "You are a Luxury Traveler. You care about premium experiences, fine dining, boutique hotels, and cultural prestige. Dismissive of budget destinations."},
+    {"name": "Adventure Seeker", "emoji": "🧗", "color": "#f97316", "bg": "#fff7ed", "border": "#fdba74",
+     "persona": "You are an Adventure Seeker. You care about hiking, sports, nature, and adrenaline. Bored by museum-heavy or relaxation cities."},
+]
+
+def _call_agent(agent, top3, vibes, activity_level, flight_costs):
+    cities_info = "\n".join([f"- {c['city']}: {c['match_pct']}% match, €{flight_costs.get(c['city'],'?')} flight, {c.get('event_count',0)} events this week" for c in top3])
+    prompt = f"""{agent['persona']}
+
+Destinations: {cities_info}
+Traveler vibes: {', '.join(vibes)}. Activity level: {activity_level}.
+
+Evaluate each city in 1 sentence from your persona, pick your winner.
+Respond ONLY with JSON:
+{{"evaluations": {{"{top3[0]['city']}": "...", "{top3[1]['city']}": "...", "{top3[2]['city']}": "..."}}, "winner": "city name", "verdict": "One punchy sentence"}}"""
+    response = co.chat(model="command-r-plus-08-2024", message=prompt, temperature=0.75)
+    raw = response.text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    try:
+        return json.loads(raw.strip())
+    except:
+        return {"evaluations": {}, "winner": top3[0]["city"], "verdict": "Unable to evaluate."}
+
+def _call_moderator(agent_results, top3):
+    debate = "\n".join([f"{a['emoji']} {a['name']}: recommends {r.get('winner','?')} — {r.get('verdict','')}" for a, r in zip(AGENTS, agent_results)])
+    prompt = f"""You are a neutral moderator. Debate summary:\n{debate}\n\nSynthesize and give a final verdict. Only JSON:
+{{"final_city": "one of the 3 cities", "consensus": "1 sentence on agreement/disagreement", "synthesis": "2 sentence balanced recommendation", "confidence": "High / Medium / Low"}}"""
+    response = co.chat(model="command-r-plus-08-2024", message=prompt, temperature=0.5)
+    raw = response.text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    try:
+        return json.loads(raw.strip())
+    except:
+        return {"final_city": top3[0]["city"], "consensus": "Mixed opinions.", "synthesis": "Top-ranked city is the best fit.", "confidence": "Medium"}
+
+def get_agent_debate(scores_df, vibes, activity_level, budget, travel_dates, city_weather):
+    if not co:
+        return None
+    top3 = []
+    flight_costs = {}
+    for i in range(min(3, len(scores_df))):
+        row = scores_df.iloc[i]
+        city_name = row["city"]
+        data = CITY_DATA.get(city_name, {})
+        base = data.get("base_flight", 120)
+        zone = data.get("distance_zone", 1)
+        season_mult = 1.0
+        if travel_dates and len(travel_dates) >= 1:
+            month = travel_dates[0].month
+            if month in [6, 7, 8, 12]: season_mult = 1.35
+            elif month in [4, 5, 9, 10]: season_mult = 1.1
+        flight_costs[city_name] = round(base * zone * season_mult)
+        top3.append({"city": city_name, "emoji": data.get("emoji", "🌍"), "match_pct": row["match_pct"], "event_count": row.get("event_count", 0)})
+    agent_results = [_call_agent(agent, top3, vibes, activity_level, flight_costs) for agent in AGENTS]
+    moderator = _call_moderator(agent_results, top3)
+    return {"top3": top3, "agent_results": agent_results, "moderator": moderator, "flight_costs": flight_costs}
+
+# ── COST MODEL ─────────────────────────────────────────────────────────────────
+
+def estimate_cost(city_name, budget, travel_dates, activity_level):
+    data = CITY_DATA.get(city_name, {})
+    base_flight = data.get("base_flight", 120)
+    zone = data.get("distance_zone", 1)
+    num_days = 3
+    if travel_dates and len(travel_dates) == 2:
+        num_days = max((travel_dates[1] - travel_dates[0]).days, 1)
+    season_mult = 1.0
+    if travel_dates and len(travel_dates) >= 1:
+        month = travel_dates[0].month
+        if month in [6, 7, 8, 12]: season_mult = 1.35
+        elif month in [4, 5, 9, 10]: season_mult = 1.1
+    daily_spend = {"Very Low": 40, "Moderate": 70, "Intense": 110}
+    est_activities = daily_spend[activity_level] * num_days
+    est_flight = round(base_flight * zone * season_mult)
+    total = est_flight + est_activities
+    affordable = total <= budget
+    season_label = "Peak 🔴" if season_mult == 1.35 else ("Shoulder 🟡" if season_mult == 1.1 else "Off-peak 🟢")
+    return est_flight, est_activities, total, affordable, season_label, num_days
+
+# ── CSS ────────────────────────────────────────────────────────────────────────
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.block-container { padding-top: 1rem !important; }
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:wght@700&display=swap');
 
-.hero {
-    background: linear-gradient(135deg, #FF4B4B 0%, #FF8C42 50%, #FFD166 100%);
-    border-radius: 20px; padding: 52px 44px; margin-bottom: 32px;
+html, body, [class*="css"] { font-family: 'Nunito', sans-serif; }
+.block-container { padding-top: 0.5rem !important; background: #fef9f4; }
+
+/* Hero */
+.hero-wrap {
+    background: linear-gradient(160deg, #ff6b35 0%, #ff8c5a 40%, #ffb347 100%);
+    border-radius: 0px; padding: 64px 52px 56px; margin-bottom: 32px;
+    margin-left: -4rem; margin-right: -4rem;
+    position: relative; overflow: hidden; border: none;
+}
+.hero-wrap::after {
+    content: "🌍"; font-size: 260px; position: absolute;
+    right: -20px; bottom: -40px; opacity: 0.1; line-height: 1;
+}
+.live-pill {
+    display: inline-block; background: rgba(255,255,255,0.25); color: white;
+    font-size: 10px; font-weight: 800; padding: 4px 14px;
+    border-radius: 20px; letter-spacing: 2px; margin-bottom: 16px;
+    backdrop-filter: blur(4px);
+}
+.hero-title {
+    font-family: 'Lora', serif; font-size: 56px; font-weight: 700;
+    color: white; margin: 0 0 12px; line-height: 1.1;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+.hero-sub { font-size: 18px; color: rgba(255,255,255,0.88); max-width: 600px; line-height: 1.6; }
+
+/* Mood panel — removed white box, sliders sit directly on page background */
+.mood-panel {
+    background: transparent; padding: 0; margin-bottom: 20px;
+}
+.mood-panel-title {
+    font-family: 'Lora', serif; font-size: 20px; font-weight: 700;
+    color: #1e1e2e; margin-bottom: 20px;
+}
+.slider-row { margin-bottom: 18px; }
+.slider-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+}
+.slider-name { font-size: 14px; font-weight: 700; color: #374151; }
+.slider-val {
+    font-size: 13px; font-weight: 700; color: #ff6b35;
+    background: #fff3ee; padding: 3px 10px; border-radius: 12px;
+}
+
+/* Result cards */
+.city-hero {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff9a6c 100%);
+    border-radius: 24px; padding: 36px 40px; margin-bottom: 24px;
     position: relative; overflow: hidden;
 }
-.hero::before {
-    content: "✈️"; font-size: 180px; position: absolute;
-    right: -10px; top: -20px; opacity: 0.12; line-height: 1;
+.city-hero::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-.hero h1 {
-    font-family: 'Playfair Display', serif !important; font-size: 52px !important;
-    font-weight: 900 !important; color: white !important; margin: 0 0 10px 0 !important;
-    line-height: 1.1 !important; text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+.city-emoji-big { font-size: 56px; display: block; margin-bottom: 10px; }
+.city-name-big {
+    font-family: 'Lora', serif; font-size: 40px; font-weight: 700;
+    color: white; margin: 0 0 8px; line-height: 1.1;
 }
-.hero p { font-size: 18px; color: rgba(255,255,255,0.92); margin: 0; font-weight: 500; }
-
-.section-label {
-    font-size: 11px; font-weight: 700; letter-spacing: 3px;
-    text-transform: uppercase; color: #FF4B4B; margin-bottom: 6px;
-}
-.section-title {
-    font-family: 'Playfair Display', serif; font-size: 26px;
-    font-weight: 700; color: #1a1a2e; margin-bottom: 20px;
+.city-desc { font-size: 16px; color: rgba(255,255,255,0.85); margin: 0 0 18px; }
+.pill {
+    display: inline-block; background: rgba(255,255,255,0.25);
+    color: white; font-weight: 700; font-size: 13px;
+    padding: 6px 16px; border-radius: 20px; margin-right: 8px; margin-bottom: 6px;
+    backdrop-filter: blur(4px);
 }
 
-.rec-card {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 20px; padding: 36px 40px; margin-bottom: 28px;
-    position: relative; overflow: hidden;
+/* Insight card */
+.insight-card {
+    background: #fffbf7; border-radius: 20px; padding: 28px 32px;
+    border: 2px solid #fdd8c0; margin-bottom: 20px;
 }
-.rec-card::after {
-    content: ''; position: absolute; top: 0; left: 0; right: 0;
-    height: 4px; background: linear-gradient(90deg, #FF4B4B, #FF8C42, #FFD166);
+.insight-tag {
+    display: inline-block; background: #ff6b35; color: white;
+    font-size: 12px; font-weight: 800; padding: 4px 14px;
+    border-radius: 20px; margin-bottom: 14px;
 }
-.rec-card .city-emoji { font-size: 48px; margin-bottom: 12px; display: block; }
-.rec-card h2 {
-    font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900;
-    color: white; margin: 0 0 10px 0; line-height: 1.1;
+.insight-headline {
+    font-family: 'Lora', serif; font-size: 22px; font-weight: 700;
+    color: #1e1e2e; margin-bottom: 12px; line-height: 1.3;
 }
-.rec-card .tagline { font-size: 16px; color: rgba(255,255,255,0.75); margin: 0 0 16px 0; line-height: 1.5; }
-.match-badge {
-    display: inline-block; background: linear-gradient(135deg, #FF4B4B, #FF8C42);
-    color: white; font-weight: 700; font-size: 14px;
-    padding: 6px 16px; border-radius: 30px;
+.insight-narrative { font-size: 15px; color: #4b5563; line-height: 1.7; margin-bottom: 18px; }
+.activity-pill {
+    display: inline-block; background: #fff3ee; color: #ff6b35;
+    font-weight: 700; font-size: 13px; padding: 6px 14px;
+    border-radius: 20px; margin: 4px 4px 4px 0;
 }
-
-.llm-card {
-    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-    border-radius: 16px; padding: 24px 28px; margin: 20px 0;
-    border-left: 5px solid #FFD166;
-}
-.llm-card .llm-label {
-    font-size: 10px; font-weight: 700; letter-spacing: 3px;
-    text-transform: uppercase; color: #FFD166; margin-bottom: 8px;
-}
-.llm-card .llm-narrative { font-size: 15px; color: rgba(255,255,255,0.9); line-height: 1.7; margin-bottom: 16px; }
-.llm-card .activity-item {
-    background: rgba(255,255,255,0.08); border-radius: 8px;
-    padding: 8px 14px; margin-bottom: 8px; font-size: 14px; color: white;
-}
-.llm-card .tip-box {
-    background: rgba(255,209,102,0.15); border-radius: 8px;
-    padding: 10px 14px; margin-top: 12px; font-size: 13px; color: #FFD166;
+.tip-row {
+    background: #fef3c7; border-radius: 12px; padding: 12px 16px;
+    font-size: 13px; color: #92400e; margin-top: 14px; font-weight: 600;
 }
 
-.debate-container {
-    background: #f8f9ff; border-radius: 20px; padding: 28px;
-    border: 2px solid #e8e8ff; margin: 20px 0;
+/* Stat cards */
+.stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
+.stat-bubble {
+    flex: 1; background: white; border-radius: 16px; padding: 18px;
+    text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1.5px solid #f3f4f6;
 }
-.agent-card {
-    border-radius: 14px; padding: 18px 20px; margin-bottom: 12px;
-    border-left: 5px solid; position: relative;
-}
-.agent-name {
-    font-weight: 700; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
-}
-.agent-eval { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 6px; }
-.agent-verdict {
-    font-size: 13px; font-weight: 600; padding: 6px 12px;
-    border-radius: 20px; display: inline-block; margin-top: 4px;
-}
-.moderator-card {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-    border-radius: 16px; padding: 24px 28px; margin-top: 20px;
-    border: 2px solid #FFD166;
-}
-.moderator-label {
-    font-size: 10px; font-weight: 700; letter-spacing: 3px;
-    text-transform: uppercase; color: #FFD166; margin-bottom: 12px;
-}
-.moderator-city {
-    font-family: 'Playfair Display', serif; font-size: 28px;
-    font-weight: 900; color: white; margin-bottom: 8px;
-}
-.moderator-synthesis { font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.7; }
-.confidence-badge {
-    display: inline-block; font-weight: 700; font-size: 12px;
-    padding: 4px 14px; border-radius: 20px; margin-top: 12px;
-}
+.stat-bubble .s-icon { font-size: 24px; margin-bottom: 6px; }
+.stat-bubble .s-val { font-family: 'Lora', serif; font-size: 26px; font-weight: 700; color: #1e1e2e; }
+.stat-bubble .s-lab { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 
-.stat-card {
-    background: white; border-radius: 16px; padding: 20px 24px;
-    text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-    border-top: 4px solid #FF4B4B;
+/* Debate */
+.debate-wrap { background: #f9fafb; border-radius: 20px; padding: 24px; border: 1.5px solid #e5e7eb; margin: 20px 0; }
+.agent-bubble {
+    border-radius: 16px; padding: 18px 20px; margin-bottom: 12px;
+    border: 1.5px solid;
 }
-.stat-card .stat-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
-.stat-card .stat-value { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #1a1a2e; }
-.stat-card .stat-sub { font-size: 12px; color: #aaa; margin-top: 4px; }
-
-.weather-card {
-    background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
-    border-radius: 16px; padding: 24px; color: white; height: 100%;
+.agent-name-row { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+.agent-eval-line { font-size: 13px; color: #4b5563; line-height: 1.5; margin-bottom: 6px; }
+.agent-pick {
+    display: inline-block; font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; margin-top: 6px; color: white;
 }
-.weather-card .temp { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; line-height: 1; margin: 8px 0; }
-.weather-card .w-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; }
-.weather-card .w-desc { font-size: 18px; font-weight: 600; margin: 4px 0 12px; }
-.weather-card .w-detail { font-size: 13px; opacity: 0.85; }
-
-.alt-card {
-    background: white; border-radius: 16px; padding: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07); border-left: 5px solid #FF8C42;
+.verdict-card {
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    border-radius: 18px; padding: 24px 28px; margin-top: 16px;
+    border: 2px solid #ff6b35;
 }
-.alt-card .alt-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-.alt-card .alt-pct { display: inline-block; background: #FFF3E0; color: #FF8C42; font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-bottom: 8px; }
-.alt-card .alt-desc { font-size: 13px; color: #666; line-height: 1.5; }
+.verdict-label { font-size: 10px; font-weight: 800; letter-spacing: 3px; color: #ff9a6c; margin-bottom: 10px; text-transform: uppercase; }
+.verdict-city { font-family: 'Lora', serif; font-size: 28px; font-weight: 700; color: white; margin-bottom: 8px; }
+.verdict-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+.conf-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
 
-.event-card {
-    background: white; border-radius: 16px; padding: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07); border-top: 4px solid #FFD166;
+/* Events */
+.event-bubble {
+    background: white; border-radius: 16px; padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1.5px solid #f3f4f6;
 }
-.event-card .event-name { font-weight: 700; font-size: 15px; color: #1a1a2e; margin-bottom: 6px; line-height: 1.3; }
-.event-card .event-date { font-size: 12px; color: #888; margin-bottom: 12px; }
+.event-name { font-weight: 700; font-size: 14px; color: #1e1e2e; line-height: 1.4; margin-bottom: 6px; }
+.event-date { font-size: 12px; color: #9ca3af; }
 
-.chat-container {
-    background: #f8f9fa; border-radius: 20px; padding: 28px;
-    border: 2px solid #f0f0f0; margin-top: 12px;
+/* Chat */
+.chat-wrap { background: white; border-radius: 20px; padding: 24px; border: 1.5px solid #f3f4f6; margin-top: 8px; }
+.chat-title { font-family: 'Lora', serif; font-size: 20px; font-weight: 700; color: #1e1e2e; margin-bottom: 4px; }
+.chat-sub { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
+
+/* Limits */
+.limit-wrap { background: #fffbeb; border-radius: 16px; padding: 22px 26px; border-left: 5px solid #fbbf24; margin-top: 12px; }
+.limit-wrap h4 { font-family: 'Lora', serif; font-size: 16px; color: #1e1e2e; margin-bottom: 10px; }
+.limit-wrap li { font-size: 13px; color: #6b7280; margin-bottom: 5px; line-height: 1.5; }
+
+/* Section labels */
+.sec-label { font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: #ff6b35; margin-bottom: 4px; }
+.sec-title { font-family: 'Lora', serif; font-size: 24px; font-weight: 700; color: #1e1e2e; margin-bottom: 16px; }
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #fff8f4 0%, #fff3ee 100%) !important;
+    border-right: 2px solid #fdd8c0 !important;
 }
-.chat-header { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-.chat-subheader { font-size: 13px; color: #888; margin-bottom: 20px; }
+[data-testid="stSidebar"] * { color: #374151 !important; background-color: transparent !important; }
+[data-testid="stSidebar"] h3 { color: #ff6b35 !important; }
+[data-testid="stSidebar"] .stSlider { background: transparent !important; }
+[data-testid="stSidebar"] .stSlider div[data-testid="stTickBar"] { background: transparent !important; }
 
-.limit-card {
-    background: #FFFDE7; border-radius: 16px; padding: 24px 28px;
-    border-left: 6px solid #FFD166; margin-top: 12px;
-}
-.limit-card h4 { font-family: 'Playfair Display', serif; font-size: 18px; color: #1a1a2e; margin-bottom: 12px; }
-.limit-card li { font-size: 14px; color: #555; margin-bottom: 6px; line-height: 1.5; }
-
-[data-testid="stSidebar"] { background: #1a1a2e !important; }
-[data-testid="stSidebar"] * { color: white !important; }
-
+/* Button */
 .stButton > button {
-    background: linear-gradient(135deg, #FF4B4B 0%, #FF8C42 100%) !important;
-    color: white !important; border: none !important; border-radius: 50px !important;
-    padding: 16px 32px !important; font-size: 18px !important; font-weight: 700 !important;
-    width: 100% !important; box-shadow: 0 8px 24px rgba(255,75,75,0.35) !important;
+    background: linear-gradient(135deg, #ff6b35, #ff9a6c) !important;
+    color: white !important; border: none !important;
+    border-radius: 50px !important; padding: 14px 32px !important;
+    font-size: 17px !important; font-weight: 800 !important;
+    font-family: 'Nunito', sans-serif !important;
+    width: 100% !important; box-shadow: 0 6px 20px rgba(255,107,53,0.35) !important;
+    letter-spacing: 0.5px !important;
 }
-hr { border-color: #f0f0f0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # ── HERO ───────────────────────────────────────────────────────────────────────
 
 st.markdown("""
-<div class="hero">
-    <h1>Where to next?</h1>
-    <p>Tell us your vibe — we'll find your perfect European escape, debated by AI agents and backed by live data.</p>
+<div class="hero-wrap">
+    <div class="live-pill">● LIVE THIS WEEK</div>
+    <div class="hero-title">Europe This Week 🌍</div>
+    <p class="hero-sub">Slide into your mood — we'll find the European city that matches how you feel right now, using live events and real weather data.</p>
 </div>
 """, unsafe_allow_html=True)
 
 # ── SIDEBAR ────────────────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.markdown("### 📍 Travel Details")
-    travel_dates = st.date_input("When are you free?", [])
-    budget = st.slider("Max Flight Budget (€)", 50, 1000, 300)
+    st.markdown("### 🗓️ Trip Details")
+    travel_dates = st.date_input("When are you going?", [])
+    budget = st.slider("Max Flight Budget (€)", 50, 500, 200)
     st.markdown("---")
-    st.markdown("### 🎨 Personal Interests")
-    interests = st.multiselect(
-        "What do you love?",
-        ["Music Festivals", "Art Galleries", "Sports", "Hiking", "Foodie Tours"]
-    )
+    st.markdown("### ✨ How it works")
+    st.markdown("1. Set your mood sliders\n2. We fetch **live events + weather** for 15 cities\n3. AI matches your mood to the best city this week\n4. 3 AI agents debate your top picks\n5. You get a personalised city recommendation!")
 
-# ── MAIN INPUTS ────────────────────────────────────────────────────────────────
+# ── MOOD SLIDERS ───────────────────────────────────────────────────────────────
 
-st.markdown("<div class='section-label'>Step 1</div><div class='section-title'>What's the mood of this trip?</div>", unsafe_allow_html=True)
+st.markdown("<div class='sec-label'>Step 1</div><div class='sec-title'>How are you feeling? 🎭</div>", unsafe_allow_html=True)
 
-col_v, col_a = st.columns([2, 1])
-with col_v:
-    vibes = st.multiselect(
-        "Trip Vibe — pick everything that applies:",
-        ["Relaxation", "Adventure", "Nightlife", "Culture", "Hidden Gems", "Romantic", "Foodie", "Beach"],
-        default=["Culture"]
-    )
-with col_a:
-    activity_level = st.select_slider(
-        "Activity level:",
-        options=["Very Low", "Moderate", "Intense"],
-        value="Moderate"
-    )
+st.markdown("<div class='mood-panel-title'>Move the sliders to match your current mood 👇</div>", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    energy = st.slider("🔋 Energy Level", 0, 100, 50, key="sl_energy")
+    st.markdown(f"<div style='font-size:12px;color:#ff6b35;font-weight:700;margin-top:-12px;margin-bottom:16px;'>{energy_emoji(energy)}</div>", unsafe_allow_html=True)
+
+    social = st.slider("👥 Social Appetite", 0, 100, 50, key="sl_social")
+    st.markdown(f"<div style='font-size:12px;color:#ff6b35;font-weight:700;margin-top:-12px;margin-bottom:16px;'>{social_emoji(social)}</div>", unsafe_allow_html=True)
+
+    splurge = st.slider("💸 Budget Mood", 0, 100, 50, key="sl_splurge")
+    st.markdown(f"<div style='font-size:12px;color:#ff6b35;font-weight:700;margin-top:-12px;margin-bottom:16px;'>{splurge_emoji(splurge)}</div>", unsafe_allow_html=True)
+
+with col2:
+    sunshine = st.slider("☀️ Sunshine Craving", 0, 100, 50, key="sl_sunshine")
+    st.markdown(f"<div style='font-size:12px;color:#ff6b35;font-weight:700;margin-top:-12px;margin-bottom:16px;'>{sunshine_emoji(sunshine)}</div>", unsafe_allow_html=True)
+
+    adventure = st.slider("🧗 Adventure Appetite", 0, 100, 50, key="sl_adventure")
+    st.markdown(f"<div style='font-size:12px;color:#ff6b35;font-weight:700;margin-top:-12px;margin-bottom:16px;'>{adventure_emoji(adventure)}</div>", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 col_btn, _ = st.columns([1, 2])
 with col_btn:
-    clicked = st.button("✈️  SURPRISE ME", key="go_btn")
+    clicked = st.button("🗺️  Find My City This Week!", key="go_btn")
 
 # ── SESSION STATE ──────────────────────────────────────────────────────────────
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-if "recommendation_done" not in st.session_state:
-    st.session_state.recommendation_done = False
-if "current_city" not in st.session_state:
-    st.session_state.current_city = None
+for key in ["chat_history", "recommendation_done", "current_city"]:
+    if key not in st.session_state:
+        st.session_state[key] = [] if key == "chat_history" else (False if key == "recommendation_done" else None)
 
 # ── MAIN LOGIC ─────────────────────────────────────────────────────────────────
 
 if clicked:
-    if not vibes and not interests:
-        st.warning("Please select at least one vibe or interest!")
-        st.stop()
-
     st.session_state.chat_history = []
 
-    with st.spinner("Finding your perfect destination..."):
-        scores_df = score_cities(vibes, interests, activity_level)
+    # Save slider values with different keys to avoid widget conflict
+    saved_energy = energy
+    saved_social = social
+    saved_splurge = splurge
+    saved_sunshine = sunshine
+    saved_adventure = adventure
+
+    with st.spinner("🌍 Fetching live events and weather for all 15 cities..."):
+        city_event_counts = fetch_event_counts_all_cities()
+        city_weather = fetch_weather_all_cities()
+
+    vibes, interests, activity_level = sliders_to_profile(saved_energy, saved_social, saved_splurge, saved_sunshine, saved_adventure)
+
+    with st.spinner("🎯 Matching your mood to this week's city vibes..."):
+        scores_df = score_cities(vibes, interests, activity_level, saved_energy, saved_social, saved_splurge, saved_sunshine, saved_adventure, city_event_counts, city_weather)
         top = scores_df.iloc[0]
         city = top["city"]
         city_info = CITY_DATA[city]
         est_flight, est_act, total_est, affordable, season_label, num_days = estimate_cost(city, budget, travel_dates, activity_level)
-        weather = fetch_weather(city)
         real_events = fetch_real_events(city)
 
-    with st.spinner("✨ Getting AI-powered travel insights..."):
-        llm_insight = get_llm_travel_insight(city, vibes, interests, activity_level, top["match_pct"])
+    with st.spinner("✨ Generating your mood-aware travel narrative..."):
+        llm_insight = get_mood_narrative(city, vibes, interests, activity_level, saved_energy, saved_social, saved_splurge, saved_sunshine, saved_adventure, top["match_pct"], city_weather, city_event_counts.get(city, 0))
 
-    with st.spinner("🤖 Running agent debate on your top 3 cities..."):
-        debate = get_agent_debate(scores_df, vibes, interests, activity_level, budget, travel_dates)
+    with st.spinner("🤖 Running AI agent debate on your top 3 cities..."):
+        debate = get_agent_debate(scores_df, vibes, activity_level, budget, travel_dates, city_weather)
 
+    # Store everything in session state WITHOUT conflicting widget keys
     st.session_state.recommendation_done = True
     st.session_state.current_city = city
     st.session_state.scores_df = scores_df
@@ -775,12 +722,20 @@ if clicked:
     st.session_state.affordable = affordable
     st.session_state.season_label = season_label
     st.session_state.num_days = num_days
-    st.session_state.weather = weather
     st.session_state.real_events = real_events
     st.session_state.llm_insight = llm_insight
     st.session_state.debate = debate
     st.session_state.vibes = vibes
     st.session_state.interests = interests
+    st.session_state.activity_level = activity_level
+    st.session_state.city_weather = city_weather
+    st.session_state.city_event_counts = city_event_counts
+    # Save slider values with non-conflicting names
+    st.session_state.saved_energy = saved_energy
+    st.session_state.saved_social = saved_social
+    st.session_state.saved_splurge = saved_splurge
+    st.session_state.saved_sunshine = saved_sunshine
+    st.session_state.saved_adventure = saved_adventure
 
     st.balloons()
 
@@ -790,245 +745,219 @@ if st.session_state.recommendation_done:
     city = st.session_state.current_city
     top = st.session_state.top
     city_info = st.session_state.city_info
+    scores_df = st.session_state.scores_df
+    vibes = st.session_state.vibes
+    interests = st.session_state.interests
+    activity_level = st.session_state.activity_level
+    city_weather = st.session_state.city_weather
+    city_event_counts = st.session_state.city_event_counts
+    llm_insight = st.session_state.llm_insight
+    debate = st.session_state.debate
+    real_events = st.session_state.real_events
     est_flight = st.session_state.est_flight
     est_act = st.session_state.est_act
     total_est = st.session_state.total_est
     affordable = st.session_state.affordable
     season_label = st.session_state.season_label
     num_days = st.session_state.num_days
-    weather = st.session_state.weather
-    real_events = st.session_state.real_events
-    llm_insight = st.session_state.llm_insight
-    debate = st.session_state.debate
-    scores_df = st.session_state.scores_df
-    vibes = st.session_state.vibes
-    interests = st.session_state.interests
+    saved_energy = st.session_state.saved_energy
+    saved_social = st.session_state.saved_social
+    saved_splurge = st.session_state.saved_splurge
+    saved_sunshine = st.session_state.saved_sunshine
+    saved_adventure = st.session_state.saved_adventure
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Recommendation Card ──
+    # ── Live Europe Mood Map ──
+    st.markdown("<div class='sec-label'>Live This Week</div><div class='sec-title'>Europe's Mood Map 🗺️</div>", unsafe_allow_html=True)
+    st.caption("Bubble size = live events this week · Color = current temperature · Updated in real time")
+
+    map_data = []
+    for city_name, data in CITY_DATA.items():
+        w = city_weather.get(city_name, {})
+        ev = city_event_counts.get(city_name, 0)
+        row = scores_df[scores_df["city"] == city_name]
+        match_pct = int(row["match_pct"].values[0]) if len(row) > 0 else 0
+        map_data.append({
+            "city": city_name.split(",")[0], "lat": data["lat"], "lon": data["lon"],
+            "temp": w.get("temp", 15), "events": max(ev, 1),
+            "match_pct": match_pct, "weather": w.get("description", ""),
+        })
+
+    map_df = pd.DataFrame(map_data)
+    fig_map = px.scatter_geo(
+        map_df, lat="lat", lon="lon", text="city",
+        size="events", size_max=45,
+        color="temp", color_continuous_scale=["#93c5fd", "#fde68a", "#fb923c", "#ef4444"],
+        hover_data={"events": True, "temp": True, "match_pct": True, "weather": True, "lat": False, "lon": False},
+        labels={"temp": "°C", "events": "Events", "match_pct": "Your match %"},
+    )
+    fig_map.update_traces(textposition="top center", textfont=dict(size=10, color="#374151"))
+    fig_map.update_layout(
+        geo=dict(scope="europe", showland=True, landcolor="#fef9f0",
+                 showocean=True, oceancolor="#dbeafe",
+                 showcoastlines=True, coastlinecolor="#e5e7eb",
+                 showcountries=True, countrycolor="#e5e7eb"),
+        height=420, margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor="rgba(0,0,0,0)",
+        coloraxis_colorbar=dict(title="Temp °C", thickness=12, len=0.6),
+    )
+    st.plotly_chart(fig_map, use_container_width=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── City Hero Card ──
+    w = city_weather.get(city, {})
+    ev_count = city_event_counts.get(city, 0)
     st.markdown(f"""
-    <div class="rec-card">
-        <span class="city-emoji">{city_info['emoji']}</span>
-        <h2>{city}</h2>
-        <p class="tagline">{top['description']}</p>
-        <span class="match-badge">⚡ {top['match_pct']}% Match</span>
+    <div class="city-hero">
+        <span class="city-emoji-big">{city_info['emoji']}</span>
+        <div class="city-name-big">{city}</div>
+        <div class="city-desc">{top['description']}</div>
+        <span class="pill">⚡ {top['match_pct']}% mood match</span>
+        <span class="pill">{w.get('emoji','')} {w.get('temp','?')}°C right now</span>
+        <span class="pill">🎭 {ev_count} events this week</span>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── LLM Insight Card ──
+    # ── LLM Mood Insight ──
     if llm_insight:
-        activities_html = "".join([f"<div class='activity-item'>🎯 {a}</div>" for a in llm_insight.get("activities", [])])
+        mood_tag = llm_insight.get("mood_tag", "")
+        headline = llm_insight.get("headline", "")
+        narrative = llm_insight.get("narrative", "")
+        activities = llm_insight.get("activities", [])
+        packing_tip = llm_insight.get("packing_tip", "")
+        activities_html = "".join([f"<span class='activity-pill'>🎯 {a}</span>" for a in activities])
         st.markdown(f"""
-        <div class="llm-card">
-            <div class="llm-label">✨ AI-Powered Travel Insight</div>
-            <div class="llm-narrative">{llm_insight.get("narrative", "")}</div>
-            <div style='font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#FFD166;margin-bottom:10px;'>Recommended Activities</div>
-            {activities_html}
-            <div class="tip-box">🎒 Packing tip: {llm_insight.get("packing_tip", "")}</div>
-            <div class="tip-box" style='margin-top:8px;'>📅 Best time: {llm_insight.get("best_time_to_visit", "")}</div>
+        <div class="insight-card">
+            <span class="insight-tag">✨ {mood_tag}</span>
+            <div class="insight-headline">{headline}</div>
+            <div class="insight-narrative">{narrative}</div>
+            <div style='margin-bottom:8px;'>{activities_html}</div>
+            <div class="tip-row">🎒 {packing_tip}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    # ── MULTI-AGENT DEBATE (Feature 3) ────────────────────────────────────────
-    if debate:
-        st.markdown("<div class='section-label'>New in v3</div><div class='section-title'>🤖 AI Agent Debate</div>", unsafe_allow_html=True)
+    # ── Stat Bubbles ──
+    budget_diff = abs(budget - total_est)
+    status = "✅ Under budget" if affordable else "⚠️ Over budget"
+    st.markdown(f"""
+    <div class="stat-row">
+        <div class="stat-bubble"><div class="s-icon">✈️</div><div class="s-val">€{est_flight}</div><div class="s-lab">Est. Flight · {season_label}</div></div>
+        <div class="stat-bubble"><div class="s-icon">🎟️</div><div class="s-val">€{est_act}</div><div class="s-lab">Activities · {num_days} days</div></div>
+        <div class="stat-bubble"><div class="s-icon">💰</div><div class="s-val">€{total_est}</div><div class="s-lab">{status} · €{budget_diff} diff</div></div>
+        <div class="stat-bubble"><div class="s-icon">🎭</div><div class="s-val">{ev_count}</div><div class="s-lab">Live events this week</div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
+    # ── Agent Debate ──
+    if debate:
+        st.markdown("<div class='sec-label'>Multi-Agent Analysis</div><div class='sec-title'>The AI Jury 🤖</div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='background:#fff3ee;border-radius:14px;padding:16px 20px;margin-bottom:20px;border-left:4px solid #ff6b35;'>
+            <p style='margin:0;font-size:14px;color:#374151;line-height:1.6;'>
+                <b>How it works:</b> Three AI agents — each with a different travel personality — independently evaluate your top 3 matching cities.
+                A neutral <b>Moderator</b> then reads all three opinions and delivers a final synthesized verdict.
+                Each agent sees the same live event counts and flight costs, but weighs them differently based on their persona.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         top3 = debate["top3"]
         agent_results = debate["agent_results"]
         moderator = debate["moderator"]
         flight_costs = debate["flight_costs"]
 
-        # Show the 3 cities being debated
-        st.markdown(f"**Three AI agents with different travel personas debated your top 3 cities:**")
         city_cols = st.columns(3)
         for i, c in enumerate(top3):
+            w2 = city_weather.get(c["city"], {})
             with city_cols[i]:
                 st.markdown(f"""
-                <div style='text-align:center;padding:16px;background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.07);'>
-                    <div style='font-size:32px;'>{c['emoji']}</div>
-                    <div style='font-weight:700;font-size:14px;color:#1a1a2e;margin-top:6px;'>{c['city'].split(',')[0]}</div>
-                    <div style='font-size:12px;color:#888;'>{c['match_pct']}% match · €{flight_costs.get(c['city'], '?')} flight</div>
+                <div style='background:white;border-radius:14px;padding:16px;text-align:center;border:1.5px solid #f3f4f6;box-shadow:0 2px 10px rgba(0,0,0,0.05);'>
+                    <div style='font-size:30px;'>{c['emoji']}</div>
+                    <div style='font-weight:800;font-size:14px;color:#1e1e2e;margin:6px 0 2px;'>{c['city'].split(',')[0]}</div>
+                    <div style='font-size:12px;color:#9ca3af;'>{w2.get('emoji','')} {w2.get('temp','?')}°C · {c.get('event_count',0)} events</div>
+                    <div style='font-size:13px;color:#ff6b35;font-weight:800;margin-top:4px;'>€{flight_costs.get(c['city'],'?')} · {c['match_pct']}% match</div>
                 </div>
                 """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='debate-wrap'>", unsafe_allow_html=True)
 
-        # Agent verdicts
-        st.markdown("<div class='debate-container'>", unsafe_allow_html=True)
         for agent, result in zip(AGENTS, agent_results):
             evaluations = result.get("evaluations", {})
             winner = result.get("winner", "")
             verdict = result.get("verdict", "")
-
             evals_html = ""
             for c in top3:
                 city_short = c["city"].split(",")[0]
-                eval_text = evaluations.get(c["city"], "No evaluation available.")
+                eval_text = evaluations.get(c["city"], "No evaluation.")
                 is_winner = c["city"] == winner
-                winner_badge = f" <span style='background:{agent['color']};color:white;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;'>PICK ✓</span>" if is_winner else ""
-                evals_html += f"<div class='agent-eval'><b>{c['emoji']} {city_short}{winner_badge}</b> — {eval_text}</div>"
-
+                badge = f" <span style='background:{agent['color']};color:white;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;'>TOP PICK ✓</span>" if is_winner else ""
+                evals_html += f"<div class='agent-eval-line'><b>{c['emoji']} {city_short}{badge}</b> — {eval_text}</div>"
             st.markdown(f"""
-            <div class="agent-card" style='background:{agent["bg"]};border-left-color:{agent["border"]};'>
-                <div class="agent-name" style='color:{agent["color"]};'>{agent["emoji"]} {agent["name"]}</div>
+            <div class="agent-bubble" style='background:{agent["bg"]};border-color:{agent["border"]};'>
+                <div class="agent-name-row" style='color:{agent["color"]};'>{agent["emoji"]} {agent["name"]}</div>
                 {evals_html}
-                <span class="agent-verdict" style='background:{agent["color"]};color:white;'>{verdict}</span>
+                <span class="agent-pick" style='background:{agent["color"]};'>{verdict}</span>
             </div>
             """, unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Moderator verdict
-        confidence_colors = {"High": "#4CAF50", "Medium": "#FF9800", "Low": "#F44336"}
+        conf_colors = {"High": "#22c55e", "Medium": "#f97316", "Low": "#ef4444"}
         conf = moderator.get("confidence", "Medium")
-        conf_color = confidence_colors.get(conf, "#FF9800")
         final_city = moderator.get("final_city", city)
         final_emoji = next((c["emoji"] for c in top3 if c["city"] == final_city), "🌍")
-
         st.markdown(f"""
-        <div class="moderator-card">
-            <div class="moderator-label">⚖️ Moderator Verdict</div>
-            <div class="moderator-city">{final_emoji} {final_city}</div>
-            <div style='font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:8px;'>{moderator.get("consensus", "")}</div>
-            <div class="moderator-synthesis">{moderator.get("synthesis", "")}</div>
-            <span class="confidence-badge" style='background:{conf_color};color:white;'>Confidence: {conf}</span>
+        <div class="verdict-card">
+            <div class="verdict-label">⚖️ Final Verdict</div>
+            <div class="verdict-city">{final_emoji} {final_city}</div>
+            <div style='font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:8px;'>{moderator.get("consensus","")}</div>
+            <div class="verdict-text">{moderator.get("synthesis","")}</div>
+            <span class="conf-pill" style='background:{conf_colors.get(conf,"#f97316")};color:white;'>Confidence: {conf}</span>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Stat Cards ──
-    s1, s2, s3, s4 = st.columns(4)
-    budget_diff = abs(budget - total_est)
-    status_icon = "✅" if affordable else "⚠️"
-    with s1:
-        st.markdown(f"""<div class="stat-card"><div class="stat-label">Est. Flight</div><div class="stat-value">€{est_flight}</div><div class="stat-sub">Season: {season_label}</div></div>""", unsafe_allow_html=True)
-    with s2:
-        st.markdown(f"""<div class="stat-card"><div class="stat-label">Activities</div><div class="stat-value">€{est_act}</div><div class="stat-sub">{num_days} day{'s' if num_days > 1 else ''}</div></div>""", unsafe_allow_html=True)
-    with s3:
-        st.markdown(f"""<div class="stat-card"><div class="stat-label">Total Cost</div><div class="stat-value">€{total_est}</div><div class="stat-sub">{status_icon} €{budget_diff} {'under' if affordable else 'over'}</div></div>""", unsafe_allow_html=True)
-    with s4:
-        st.markdown(f"""<div class="stat-card"><div class="stat-label">Match Score</div><div class="stat-value">{top['match_pct']}%</div><div class="stat-sub">Based on {len(vibes)} vibes</div></div>""", unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ── Map + Weather ──
-    col_map, col_wx = st.columns([2, 1])
-    with col_map:
-        st.markdown("<div class='section-label'>Location</div><div class='section-title'>Where is it?</div>", unsafe_allow_html=True)
-        fig_map = go.Figure(go.Scattergeo(
-            lat=[city_info["lat"]], lon=[city_info["lon"]],
-            mode="markers+text",
-            marker=dict(size=20, color="#FF4B4B", symbol="circle", line=dict(width=3, color="white")),
-            text=[city], textposition="top center",
-            textfont=dict(size=14, color="#1a1a2e"),
-        ))
-        fig_map.update_layout(
-            geo=dict(scope="europe", showland=True, landcolor="#f5f5f5",
-                     showocean=True, oceancolor="#E3F2FD",
-                     showcoastlines=True, coastlinecolor="#ccc",
-                     showcountries=True, countrycolor="#ddd",
-                     center=dict(lat=city_info["lat"], lon=city_info["lon"]),
-                     projection_scale=4),
-            height=320, margin=dict(l=0, r=0, t=0, b=0),
-            paper_bgcolor="rgba(0,0,0,0)",
-        )
-        st.plotly_chart(fig_map, use_container_width=True)
-
-    with col_wx:
-        st.markdown("<div class='section-label'>Right now</div><div class='section-title'>Weather</div>", unsafe_allow_html=True)
-        if weather:
-            st.markdown(f"""
-            <div class="weather-card">
-                <div class="w-label">Current conditions</div>
-                <div class="temp">{weather['emoji']} {weather['temp']}°C</div>
-                <div class="w-desc">{weather['description']}</div>
-                <div class="w-detail">💨 {weather['wind']} km/h wind</div>
-                <div class="w-detail">💧 {weather['humidity']}% humidity</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.info("Weather unavailable.")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ── Score Charts ──
-    st.markdown("<div class='section-label'>Model output</div><div class='section-title'>Why this destination?</div>", unsafe_allow_html=True)
-    col_bar, col_rank = st.columns(2)
-    with col_bar:
-        fig = px.bar(
-            {"Category": ["Vibe Match", "Interest Match"], "Score": [top["vibe_score"], top["interest_score"]]},
-            x="Category", y="Score", color="Category",
-            color_discrete_sequence=["#FF4B4B", "#FF8C42"], title="Score Breakdown for " + city.split(",")[0],
-        )
-        fig.update_layout(showlegend=False, height=300, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(family="Inter"))
-        fig.update_yaxes(gridcolor="#f0f0f0")
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col_rank:
-        top5 = scores_df.head(5)
+    # ── Score chart ──
+    with st.expander("📊 See full city ranking"):
+        top5 = scores_df.head(8)
         fig2 = px.bar(top5, x="match_pct", y="city", orientation="h",
-                      color="match_pct", color_continuous_scale=["#FFD166", "#FF8C42", "#FF4B4B"],
-                      labels={"match_pct": "Match %", "city": ""}, title="Top 5 Destinations")
-        fig2.update_layout(height=300, showlegend=False, coloraxis_showscale=False,
+                      color="match_pct", color_continuous_scale=["#fde68a", "#fb923c", "#ff6b35"],
+                      labels={"match_pct": "Mood Match %", "city": ""})
+        fig2.update_layout(height=320, showlegend=False, coloraxis_showscale=False,
                            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                           font=dict(family="Inter"), yaxis={"categoryorder": "total ascending"})
+                           font=dict(family="Nunito"), yaxis={"categoryorder": "total ascending"},
+                           margin=dict(l=0, r=0, t=0, b=0))
         st.plotly_chart(fig2, use_container_width=True)
-
-    with st.expander("📊 See full ranking of all 15 destinations"):
-        fig3 = px.bar(scores_df, x="match_pct", y="city", orientation="h",
-                      color="match_pct", color_continuous_scale=["#FFD166", "#FF8C42", "#FF4B4B"],
-                      labels={"match_pct": "Match %", "city": ""})
-        fig3.update_layout(height=520, coloraxis_showscale=False,
-                           plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                           yaxis={"categoryorder": "total ascending"})
-        st.plotly_chart(fig3, use_container_width=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ── Alternatives ──
-    st.markdown("<div class='section-label'>Also consider</div><div class='section-title'>Other destinations you might love</div>", unsafe_allow_html=True)
-    alt_cols = st.columns(3)
-    for i, (_, row) in enumerate(scores_df.iloc[1:4].iterrows()):
-        with alt_cols[i]:
-            alt_info = CITY_DATA[row['city']]
-            st.markdown(f"""
-            <div class="alt-card">
-                <div style='font-size:28px;margin-bottom:8px;'>{alt_info['emoji']}</div>
-                <div class="alt-name">{row['city']}</div>
-                <span class="alt-pct">⚡ {row['match_pct']}% match</span>
-                <div class="alt-desc">{row['description']}</div>
-            </div>
-            """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Live Events ──
-    st.markdown(f"<div class='section-label'>Live in {city.split(',')[0]}</div><div class='section-title'>🎭 Upcoming Events</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sec-label'>Happening in {city.split(',')[0]}</div><div class='sec-title'>This Week's Events 🎭</div>", unsafe_allow_html=True)
     if real_events:
         ev_cols = st.columns(len(real_events))
         for i, event in enumerate(real_events):
             with ev_cols[i]:
                 st.markdown(f"""
-                <div class="event-card">
-                    <div class="event-name">{event.get('name', 'Event')}</div>
-                    <div class="event-date">📅 {event.get('dates', {}).get('start', {}).get('localDate', 'TBD')}</div>
+                <div class="event-bubble">
+                    <div class="event-name">{event.get('name','Event')}</div>
+                    <div class="event-date">📅 {event.get('dates',{}).get('start',{}).get('localDate','TBD')}</div>
                 </div>
                 """, unsafe_allow_html=True)
-                st.link_button("View Tickets 🎟️", event.get('url', '#'), use_container_width=True)
+                st.link_button("Get Tickets 🎟️", event.get('url','#'), use_container_width=True)
     else:
-        st.info("No live events found for this location right now via Ticketmaster.")
+        st.info("No events found via Ticketmaster right now.")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── CHATBOT ───────────────────────────────────────────────────────────────
-    st.markdown("<div class='section-label'>AI Travel Assistant</div><div class='section-title'>💬 Ask me anything about your trip</div>", unsafe_allow_html=True)
-
+    # ── Chatbot ──
+    st.markdown(f"<div class='sec-label'>Ask Anything</div><div class='sec-title'>Your {city.split(',')[0]} Advisor 💬</div>", unsafe_allow_html=True)
     st.markdown(f"""
-    <div class="chat-container">
-        <div class="chat-header">Your {city.split(',')[0]} Travel Assistant</div>
-        <div class="chat-subheader">Ask me about things to do, what to pack, local tips, transport, food, and more.</div>
+    <div class="chat-wrap">
+        <div class="chat-title">Hi! Ask me anything about {city.split(',')[0]} 👋</div>
+        <div class="chat-sub">What to do, where to eat, how to get there, what to pack — I'm here!</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1036,17 +965,19 @@ if st.session_state.recommendation_done:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-    if user_input := st.chat_input(f"Ask something about {city.split(',')[0]}..."):
+    if user_input := st.chat_input(f"Ask about {city.split(',')[0]}..."):
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.write(user_input)
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                reply = get_chatbot_response(
-                    user_input,
-                    st.session_state.chat_history[:-1],
-                    city, vibes, interests
-                )
+                system_prompt = f"""You are a friendly travel assistant. The user is matched with {city} based on their mood this week.
+Their mood: Energy {saved_energy}/100, Social {saved_social}/100, Budget {saved_splurge}/100, Sunshine {saved_sunshine}/100, Adventure {saved_adventure}/100.
+Live weather in {city}: {city_weather.get(city,{}).get('temp','?')}°C, {city_weather.get(city,{}).get('description','')}.
+Be concise, warm, and enthusiastic. Focus on {city}."""
+                cohere_history = [{"role": "USER" if m["role"] == "user" else "CHATBOT", "message": m["content"]} for m in st.session_state.chat_history[:-1]]
+                response = co.chat(model="command-r-plus-08-2024", message=user_input, chat_history=cohere_history, preamble=system_prompt, temperature=0.7)
+                reply = response.text
             st.write(reply)
             st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
@@ -1054,16 +985,15 @@ if st.session_state.recommendation_done:
 
     # ── Limitations ──
     st.markdown("""
-    <div class="limit-card">
-        <h4>⚠️ Model Limitations</h4>
+    <div class="limit-wrap">
+        <h4>⚠️ A few things to keep in mind</h4>
         <ul>
-            <li><b>Fixed city list:</b> Only 15 pre-selected European destinations are considered by the scoring model.</li>
-            <li><b>Static scores:</b> Vibe and interest scores were manually assigned and do not update based on real-world data.</li>
-            <li><b>Agent personas are simulated:</b> The Budget, Luxury and Adventure agents are LLM personas, not real user data — their opinions reflect training knowledge, not live prices or reviews.</li>
-            <li><b>LLM hallucination risk:</b> AI-generated activity suggestions are based on general knowledge and may not reflect current availability.</li>
-            <li><b>Approximate costs:</b> Flight prices do not reflect real-time pricing or your departure city.</li>
-            <li><b>Current weather only:</b> Weather reflects today's conditions, not the forecast for your travel dates.</li>
-            <li><b>Ticketmaster coverage varies:</b> Live event availability depends on the API and may not include all local events.</li>
+            <li><b>15 cities only:</b> We cover 15 pre-selected European destinations.</li>
+            <li><b>Slider mapping is rule-based:</b> Mood-to-vibe translation uses predefined thresholds, not learned preferences.</li>
+            <li><b>Event counts are approximate:</b> Ticketmaster coverage varies by city.</li>
+            <li><b>Weather is current, not forecast:</b> Shows today's conditions, not your travel dates.</li>
+            <li><b>Agent opinions are simulated:</b> Budget/Luxury/Adventure personas reflect LLM knowledge, not real reviews.</li>
+            <li><b>Cost estimates are approximate:</b> Based on typical prices, not real-time flight availability.</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
